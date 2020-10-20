@@ -1,6 +1,6 @@
 # Sprint PetClinic and OpenShift
 
-## Local Development
+## Localhost Development
 
 ```
 mvn package
@@ -43,65 +43,93 @@ select * from petclinic.owners;
 |  9 | David      | Schroeder | 2749 Blackhawk Trail  | Madison     | 6085559435 |
 | 10 | Carlos     | Estaban   | 2335 Independence La. | Waunakee    | 6085555487 |
 | 11 | Burr       | Sutter    | 123 ABC Lane          | Wonderland  | 5555555555 |
-| 12 | test       | test      | test                  | test        | 1231231321 |
 +----+------------+-----------+-----------------------+-------------+------------+
-12 rows in set (0.00 sec)
+11 rows in set (0.00 sec)
 
 
-http://localhost:8080
+open http://localhost:8080
 
 ```
 
-![Screenshot](screenshot.png)
+The GUI results with "Burr" as an owner when connected to MySQL
 
-## For OpenShift:
+![Screenshot](images/1-screenshot.png)
 
-### Dev Console
+
+## OpenShift
 
 Create a new OpenShift `Project` with `spring-petclinic-devconsole` name.
 
-![Create Project](create-project.png)
+![Create Project](images/2-create-project.png)
+
+### Dev Console
 
 Then move to Developer perspective:
 
-![Dev Perspective](switch-perspective.png)
+![Dev Perspective](images/3-switch-perspective.png)
 
-And create a new MySQL instance by clicking the `+Add` button and choose the `Database` option:
+And create a new MySQL instance by clicking the `+Add` button and choosing the `Database` option:
 
-![Add DB](db.png)
+![Add DB](images/4-db.png)
 
-Choose MySQL Ephimeral:
+Choose MySQL Ephemeral:
 
-![MySQL Ephimeral](mysql-ephimeral.png)
+![MySQL Ephemeral](images/5-mysql-ephemeral.png)
 
-and Push `Instantiate Template`.
+and Click `Instantiate Template`.
 
 Then fill the wizard with the following parameters:
 
-![MySQL Template](db-params.png)
+![MySQL Template](images/6-db-params.png)
 
-Push the `Create` button. 
+Click the `Create` button. 
 
-Let's deploy the Pet Clinic app.
+### Deploy Pet Clinic App
+
 
 Click the `+Add` button and choose `From Git` type:
 
-Fill the Git repo with the following value `https://github.com/burrsutter/spring-petclinic` and select the project as Java project:
+Fill the git repo with the following value `https://github.com/burrsutter/spring-petclinic` and select the project as Java project:
 
-![Pet Clinic Deploy](petclinic-deploy.png)
+![Pet Clinic Deploy](images/7-petclinic-deploy.png)
 
-Push the `Build Configuration` link:
+Click the `Build Configuration` link:
 
-![Build Configuration](build-config.png)
+![Build Configuration](images/8-build-config.png)
 
-Add the following environment variables for the application Pod:
+Add the following environment variables:
 
-![DC Env Vars](app-env-vars.png)
+```
+SPRING_PROFILES_ACTIVE=mysql
+MYSQL_URL=jdbc:mysql://mysql:3306/petclinic
+```
 
-Finally push the `Create` button and wait until the Build is done and the Pod is up and running (dark blue around the deployment bubble).
+![DC Env Vars](images/9-app-env-vars.png)
+
+Finally click the `Create` button and wait until the Build is done and the Pod is up and running (dark blue around the deployment bubble).
 Then push the Open URL button to view the Pet Clinic app:
 
-![Pet Clinic Deployment](petclinic-url.png)
+![Pet Clinic Deployment](images/10-petclinic-url.png)
 
 
-![Pet Clinic UI](output-ui.png)
+![Pet Clinic UI](images/11-output-ui.png)
+
+And if you visit the MySQL deployment's Terminal then you connect to the database to see the schema and data
+
+
+```
+mysql -u root -h mysql -p
+
+petclinic
+
+use petclinic;
+show tables;
+```
+
+![MySQL Terminal](images/12-mysql-terminal-1.png)
+
+```
+select * from owners;
+```
+
+![MySQL Terminal](images/13-mysql-terminal-2.png)
