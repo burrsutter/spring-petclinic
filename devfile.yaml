@@ -1,0 +1,125 @@
+apiVersion: 1.0.0
+metadata:
+  generateName: spring-petclinic-
+projects:
+  -
+    name: spring-petclinic
+    source:
+      type: git
+      location: "https://github.com/burrsutter/spring-petclinic"
+      branch: "1.0.1"
+components:
+  -
+    type: cheEditor
+    reference: https://gist.githubusercontent.com/benoitf/f2af86c1fdbfa5a0eda926c3e708c704/raw/40c83f024cc25d77719e981155bef50e91d8668c/theia-editor-burr.yaml
+    memoryLimit: 512Mi
+  -
+    type: chePlugin
+    reference: https://raw.githubusercontent.com/eclipse/che-plugin-registry/master/v3/plugins/ms-vscode/vscode-github-pullrequest/0.20.0/meta.yaml
+    memoryLimit: 512Mi    
+  -
+    type: chePlugin
+    id: redhat/java/latest
+    memoryLimit: 1280Mi
+  -
+    type: dockerimage
+    alias: open-file-startup
+    image: quay.io/fbenoit/che-open-file-at-startup:1.0.0
+    env:
+      - name: FILE_TO_OPEN
+        value: "/projects/spring-petclinic/src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java"
+      - name: LINE_COLUMN_TO_OPEN
+        value: "86,70"
+    mountSources: true
+    memoryLimit: 50Mi
+  -
+    type: dockerimage
+    alias: tools
+    image: quay.io/eclipse/che-java8-maven:nightly
+    env:
+      - name: MAVEN_CONFIG
+        value: ""
+      - name: JAVA_OPTS
+        value: "-XX:MaxRAMPercentage=50.0 -XX:+UseParallelGC -XX:MinHeapFreeRatio=10
+          -XX:MaxHeapFreeRatio=20 -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90
+          -Dsun.zip.disableMemoryMapping=true -Xms20m -Djava.security.egd=file:/dev/./urandom
+          -Duser.home=/home/user"
+      - name: MAVEN_OPTS
+        value: $(JAVA_OPTS)
+    memoryLimit: 1000Mi
+    endpoints:
+      - name: '8080-tcp'
+        port: 8080
+    mountSources: true
+    volumes:
+      - name: m2
+        containerPath: /home/user/.m2
+  -
+    type: dockerimage
+    alias: mysql
+    image: docker.io/centos/mysql-57-centos7
+    env:
+      - name: MYSQL_USER
+        value: petclinic
+      - name: MYSQL_PASSWORD
+        value: petclinic
+      - name: MYSQL_DATABASE
+        value: petclinic
+      - name: PS1
+        value: $(echo ${0})\\$
+    memoryLimit: 300Mi
+    endpoints:
+      - name: 'db'
+        port: 3306
+        attributes:
+          discoverable: "true"
+          public: "false"
+    mountSources: true
+commands:
+  -
+    name: maven build
+    actions:
+      -
+        type: exec
+        component: tools
+        command: "mvn clean install"
+        workdir: "${CHE_PROJECTS_ROOT}/spring-petclinic"
+  -
+    name: run webapp
+    actions:
+      -
+        type: exec
+        component: tools
+        command: |
+          SPRING_DATASOURCE_URL=jdbc:mysql://db/petclinic \
+          SPRING_DATASOURCE_USERNAME=petclinic \
+          SPRING_DATASOURCE_PASSWORD=petclinic \
+          java -jar -Dspring.profiles.active=mysql \
+          -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5005 \
+          target/*.jar
+        workdir: ${CHE_PROJECTS_ROOT}/spring-petclinic
+  -
+    name: prepare database
+    actions:
+    -
+      type: exec
+      component: mysql
+      command: |
+        /opt/rh/rh-mysql57/root/usr/bin/mysql -u root < ${CHE_PROJECTS_ROOT}/spring-petclinic/src/main/resources/db/mysql/user.sql &&
+        /opt/rh/rh-mysql57/root/usr/bin/mysql -u root petclinic < ${CHE_PROJECTS_ROOT}/spring-petclinic/src/main/resources/db/mysql/schema.sql &&
+        echo -e "\e[32mDone.\e[0m Database petclinic was configured!"
+  - name: Debug remote java application
+    actions:
+      - type: vscode-launch
+        referenceContent: |
+          {
+          "version": "0.2.0",
+          "configurations": [
+            {
+              "type": "java",
+              "name": "Debug (Attach) - Remote",
+              "request": "attach",
+              "hostName": "localhost",
+              "port": 5005
+            }]
+          }
