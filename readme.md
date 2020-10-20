@@ -1,4 +1,4 @@
-# Sprint PetClinic and OpenShift
+# Spring Pet Clinic and OpenShift
 
 ## Localhost Development
 
@@ -58,7 +58,7 @@ The GUI results with "Burr" as an owner when connected to MySQL
 
 ## OpenShift
 
-Create a new OpenShift `Project` with `spring-petclinic-devconsole` name.
+Create a new OpenShift `Project` with `spring-petclinic` name.
 
 ![Create Project](images/2-create-project.png)
 
