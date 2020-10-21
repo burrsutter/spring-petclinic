@@ -29,7 +29,7 @@ components:
       - name: FILE_TO_OPEN
         value: "/projects/spring-petclinic/src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java"
       - name: LINE_COLUMN_TO_OPEN
-        value: "86,70"
+        value: "87,9"
     mountSources: true
     memoryLimit: 50Mi
   -
