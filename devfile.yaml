@@ -1,0 +1,10 @@
+apiVersion: 1.0.0
+metadata:
+  generateName: spring-petclinic-1
+components:
+  - id: redhat/java11/latest
+    type: chePlugin
+    alias: java
+  - id: ms-vscode/vscode-github-pullrequest/latest
+    type: chePlugin
+ 
